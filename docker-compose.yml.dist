@@ -1,0 +1,43 @@
+front:
+    image: nginx
+    ports:
+        - "80:80"
+    links:
+        - "web:web"
+    volumes:
+        - ".:/home/docker:ro"
+        - "./docker/front/default.conf:/etc/nginx/conf.d/default.conf:ro"
+
+web:
+    build: ./docker/engine/
+    volumes:
+        - ".:/home/docker:rw"
+        - "./docker/engine/php.ini:/usr/local/etc/php/conf.d/custom.ini:ro"
+    links:
+        - "db:db"
+    working_dir: "/home/docker"
+
+db:
+    image: mysql:5.7
+    ports:
+        - "3309:3309"
+    environment:
+        - "MYSQL_ROOT_PASSWORD=your_root_password"
+        - "MYSQL_USER=your_user"
+        - "MYSQL_PASSWORD=your_user_password"
+        - "MYSQL_DATABASE=your_database_name"
+gitlab:
+    image: 'gitlab/gitlab-ce:latest'
+    restart: always
+    hostname: 'gitlab.imadzairig.com'
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://gitlab.imadzairig.com' ;nginx['listen_port'] = 80; nginx['listen_https'] = false;gitlab_rails['gitlab_shell_ssh_port'] = 2224
+    ports:
+      - '85:80'
+      - '443:443'
+      - '2224:22'
+    volumes:
+      - '/srv/gitlab/config:/etc/gitlab'
+      - '/srv/gitlab/logs:/var/log/gitlab'
+      - '/srv/gitlab/data:/var/opt/gitlab'

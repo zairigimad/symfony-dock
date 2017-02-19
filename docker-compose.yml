@@ -1,0 +1,28 @@
+front:
+    image: nginx
+    ports:
+        - "80:80"
+    links:
+        - "web:web"
+    volumes:
+        - ".:/home/docker:ro"
+        - "./docker/front/default.conf:/etc/nginx/conf.d/default.conf:ro"
+
+web:
+    build: ./docker/engine/
+    volumes:
+        - ".:/home/docker:rw"
+        - "./docker/engine/php.ini:/usr/local/etc/php/conf.d/custom.ini:ro"
+    links:
+        - "db:db"
+    working_dir: "/home/docker"
+
+db:
+    image: mysql:5.7
+    ports:
+        - "3309:3309"
+    environment:
+        - "MYSQL_ROOT_PASSWORD=pass"
+        - "MYSQL_USER=root"
+        - "MYSQL_PASSWORD=root"
+        - "MYSQL_DATABASE=symfony"
